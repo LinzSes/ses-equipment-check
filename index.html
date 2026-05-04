@@ -279,52 +279,26 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);over
 .orc-del-btn{padding:5px 10px;border:1px solid rgba(255,23,68,.3);background:rgba(255,23,68,.08);color:var(--red);border-radius:var(--rs);font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap}
 #toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--steel);color:#fff;padding:10px 20px;border-radius:30px;font-size:13px;font-weight:600;transition:transform .3s;z-index:9999;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.5)}
 #toast.show{transform:translateX(-50%) translateY(0)}
-</style>
-</head>
-<body>
-/* Teams-specific */
-#teamsInitOverlay{position:fixed;inset:0;background:#0D1B2A;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
-#teamsInitOverlay.hidden{display:none}
-.init-spinner{width:40px;height:40px;border:3px solid rgba(255,90,0,.2);border-top-color:#FF5A00;border-radius:50%;animation:spin 0.8s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-.init-msg{font-family:'Barlow Condensed',sans-serif;font-size:16px;color:var(--muted);letter-spacing:1px}
-.init-logo{font-size:40px;margin-bottom:8px}
+
+/* ── Teams setup overlay ── */
+#teamsOverlay{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+#teamsOverlay.hidden{display:none}
+.t-spinner{width:36px;height:36px;border:3px solid rgba(255,90,0,.2);border-top-color:#FF5A00;border-radius:50%;animation:tspin .8s linear infinite}
+@keyframes tspin{to{transform:rotate(360deg)}}
+.t-msg{font-family:'Barlow Condensed',sans-serif;font-size:15px;color:var(--muted);letter-spacing:1px}
+#setupScreen{position:fixed;inset:0;background:var(--bg);z-index:9998;display:none;align-items:center;justify-content:center;padding:20px}
+#setupScreen.show{display:flex}
 .setup-card{width:100%;max-width:440px;background:var(--card);border:1px solid var(--border2);border-radius:16px;padding:28px 24px}
-.setup-card h2{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;margin-bottom:8px}
-.setup-card p{font-size:13px;color:var(--muted);margin-bottom:18px;line-height:1.6}
+.setup-card h2{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;margin:0 0 8px}
+.setup-card p{font-size:13px;color:var(--muted);margin:0 0 18px;line-height:1.6}
 .setup-err{color:#FF6B6B;font-size:12px;margin-top:10px;min-height:16px}
-.sync-badge{position:fixed;top:56px;right:10px;background:rgba(0,200,83,.15);border:1px solid rgba(0,200,83,.4);color:var(--green);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600;z-index:800;opacity:0;transition:opacity .3s}
+.sync-badge{position:fixed;top:52px;right:10px;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600;z-index:800;opacity:0;transition:opacity .3s;background:rgba(0,200,83,.15);border:1px solid rgba(0,200,83,.4);color:var(--green)}
 .sync-badge.show{opacity:1}
 .sync-badge.err{background:rgba(255,23,68,.1);border-color:rgba(255,23,68,.4);color:var(--red)}
 </style>
 </head>
 <body>
 
-<!-- Teams init overlay -->
-<div id="teamsInitOverlay">
-  <div class="init-logo">🚨</div>
-  <div class="init-spinner"></div>
-  <div class="init-msg" id="initMsg">CONNECTING TO TEAMS…</div>
-</div>
-
-<!-- SharePoint setup screen (shown if no site URL stored) -->
-<div id="setupScreen" style="position:fixed;inset:0;background:#0D1B2A;z-index:9998;display:none;align-items:center;justify-content:center;padding:20px">
-  <div class="setup-card">
-    <div style="font-size:32px;margin-bottom:12px">⚙️</div>
-    <h2>FIRST-TIME SETUP</h2>
-    <p>Enter your SharePoint site URL to enable shared data storage. This is the address of your SES Teams SharePoint site.</p>
-    <div class="fwrap">
-      <div class="flabel">SharePoint Site URL</div>
-      <input class="finput" id="setupUrl" type="url" placeholder="https://yourorg.sharepoint.com/sites/SESUnit" autocomplete="off">
-    </div>
-    <p style="font-size:11px;color:var(--muted);margin-top:-6px;margin-bottom:18px">Find this by opening Teams → your SES team → Files → Open in SharePoint. Copy the URL up to <b style="color:var(--text)">/sites/YourSiteName</b></p>
-    <button class="btn-primary" onclick="doSetupSave()">SAVE &amp; CONNECT</button>
-    <div class="setup-err" id="setupErr"></div>
-    <button onclick="doSetupSkip()" style="width:100%;margin-top:10px;padding:10px;border:1px solid var(--border);border-radius:var(--rs);background:transparent;color:var(--muted);font-size:13px;cursor:pointer">Use local storage only (this device only)</button>
-  </div>
-</div>
-
-<div class="sync-badge" id="syncBadge"></div>
 <div class="screen" id="loginScreen">
   <div class="login-card">
     <div class="login-logo">
@@ -379,6 +353,22 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);over
 </div>
 
 <div id="toast"></div>
+<div id="syncBadge" class="sync-badge"></div>
+<div id="teamsOverlay" class="hidden">
+  <div class="t-spinner"></div>
+  <div class="t-msg" id="tMsg">LOADING DATA…</div>
+</div>
+<div id="setupScreen">
+  <div class="setup-card">
+    <h2>Optional SharePoint Sync</h2>
+    <p>This build can run locally now. SharePoint List sync is optional and can be configured later.</p>
+    <div class="form-full"><div class="flabel">SharePoint Site URL</div><input class="finput" id="setupUrl" placeholder="https://membersesnswgov.sharepoint.com/sites/CessnockCityUnitT"></div>
+    <button class="btn-primary" onclick="doSetupSave()">CONNECT SHAREPOINT</button>
+    <button class="btn-sm" style="width:100%;margin-top:10px" onclick="doSetupSkip()">RUN LOCAL ONLY</button>
+    <div class="setup-err" id="setupErr"></div>
+  </div>
+</div>
+
 
 <script>
 // ─── GLOBAL ERROR HANDLER ────────────────────────────────────────────────────
@@ -570,232 +560,6 @@ function roleLabel(m){
   if(r==='admin_inventory')return'Admin \u2014 Inventory';
   return'Member';
 }
-
-// ─── SHAREPOINT / TEAMS CONFIG ───────────────────────────────────────────────
-var SP_SITE_URL=''; // set from localStorage or setup screen
-var SP_LIST_PREFIX='SESEquip_';
-var SP_LISTS={
-  members:'SESEquip_Members',
-  vehicles:'SESEquip_Vehicles',
-  checks:'SESEquip_Checks',
-  notes:'SESEquip_Notes',
-  signoffs:'SESEquip_Signoffs',
-  vchecks:'SESEquip_VChecks',
-  orc:'SESEquip_ORC',
-  orcCustom:'SESEquip_ORCCustom'
-};
-var USE_SHAREPOINT=false;
-var TEAMS_CONTEXT=null;
-var SP_TOKEN=''; // from Teams SSO
-var _saveTimer=null;
-var _pendingSave={};
-
-// ─── UTILS ───────────────────────────────────────────────────────────────────
-function escHtml(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-function jsStr(s){return String(s==null?'':s).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,'\\n').replace(/\r/g,'');}
-function showSyncBadge(msg,err){
-  var b=document.getElementById('syncBadge');
-  if(!b)return;
-  b.textContent=msg;
-  b.className='sync-badge show'+(err?' err':'');
-  clearTimeout(b._t);
-  b._t=setTimeout(function(){b.classList.remove('show');},2500);
-}
-
-
-// ─── SHAREPOINT REST API ──────────────────────────────────────────────────────
-async function spRequest(method, url, body){
-  var headers={'Accept':'application/json;odata=verbose','Content-Type':'application/json;odata=verbose'};
-  if(SP_TOKEN) headers['Authorization']='Bearer '+SP_TOKEN;
-  if(method==='POST'||method==='MERGE'||method==='DELETE'){
-    var digest=await getFormDigest();
-    if(digest) headers['X-RequestDigest']=digest;
-    if(method==='MERGE'){headers['X-HTTP-Method']='MERGE';headers['IF-MATCH']='*';method='POST';}
-    if(method==='DELETE'){headers['X-HTTP-Method']='DELETE';headers['IF-MATCH']='*';method='POST';}
-  }
-  var opts={method:method,headers:headers,credentials:'include'};
-  if(body) opts.body=JSON.stringify(body);
-  var r=await fetch(url,opts);
-  if(!r.ok){var txt=await r.text().catch(function(){return'';});throw new Error('SP '+r.status+': '+txt.substr(0,120));}
-  if(r.status===204||method==='DELETE') return null;
-  return r.json();
-}
-
-var _digestCache=null,_digestExpiry=0;
-async function getFormDigest(){
-  if(_digestCache&&Date.now()<_digestExpiry) return _digestCache;
-  try{
-    var r=await fetch(SP_SITE_URL+'/_api/contextinfo',{method:'POST',headers:{'Accept':'application/json;odata=verbose'},credentials:'include'});
-    if(!r.ok) return null;
-    var d=await r.json();
-    _digestCache=d.d.GetContextWebInformation.FormDigestValue;
-    _digestExpiry=Date.now()+25*60*1000;
-    return _digestCache;
-  }catch(e){return null;}
-}
-
-async function spEnsureList(listName,fields){
-  // Check list exists
-  try{
-    await spRequest('GET',SP_SITE_URL+"/_api/web/lists/getbytitle('"+listName+"')?$select=Id",null);
-    return true; // exists
-  }catch(e){}
-  // Create list
-  try{
-    await spRequest('POST',SP_SITE_URL+'/_api/web/lists',{__metadata:{type:'SP.List'},Title:listName,BaseTemplate:100,Description:'SES Equipment Check data'});
-    // Add fields
-    for(var i=0;i<fields.length;i++){
-      var f=fields[i];
-      await spRequest('POST',SP_SITE_URL+"/_api/web/lists/getbytitle('"+listName+"')/fields",{__metadata:{type:'SP.Field'},Title:f.name,FieldTypeKind:f.type||3,MaxLength:f.max||255}).catch(function(){});
-    }
-    return true;
-  }catch(e){console.error('Create list failed:',e);return false;}
-}
-
-async function spGetItem(listName,key){
-  try{
-    var r=await spRequest('GET',SP_SITE_URL+"/_api/web/lists/getbytitle('"+listName+"')/items?$filter=Title eq '"+encodeURIComponent(key)+"'&$top=1",null);
-    if(r&&r.d&&r.d.results&&r.d.results.length>0) return r.d.results[0];
-    return null;
-  }catch(e){return null;}
-}
-
-async function spSetItem(listName,key,value){
-  try{
-    var existing=await spGetItem(listName,key);
-    var body={__metadata:{type:'SP.Data.'+listName+'ListItem'},Title:key,SESValue:JSON.stringify(value)};
-    if(existing){
-      await spRequest('MERGE',SP_SITE_URL+"/_api/web/lists/getbytitle('"+listName+"')/items("+existing.Id+")",body);
-    }else{
-      await spRequest('POST',SP_SITE_URL+"/_api/web/lists/getbytitle('"+listName+"')/items",body);
-    }
-    return true;
-  }catch(e){console.error('spSetItem error:',e);return false;}
-}
-
-async function spGetAllItems(listName){
-  try{
-    var r=await spRequest('GET',SP_SITE_URL+"/_api/web/lists/getbytitle('"+listName+"')/items?$top=500",null);
-    if(r&&r.d&&r.d.results) return r.d.results;
-    return [];
-  }catch(e){return [];}
-}
-
-// ─── DATA STORE: UNIFIED LOAD/SAVE ───────────────────────────────────────────
-// Wraps either SharePoint or localStorage transparently
-
-function lsGet(key,fallback){try{return JSON.parse(localStorage.getItem(key))||fallback;}catch(e){return fallback;}}
-function lsSet(key,val){try{localStorage.setItem(key,JSON.stringify(val));}catch(e){}}
-
-async function dataLoad(key,fallback){
-  if(!USE_SHAREPOINT) return lsGet('ses_'+key,fallback);
-  var listName=SP_LISTS[key]||('SESEquip_'+key);
-  var items=await spGetAllItems(listName);
-  if(items.length===0) return fallback;
-  // Find item with Title==="data"
-  var found=items.find(function(i){return i.Title==='data';});
-  if(!found) return fallback;
-  try{return JSON.parse(found.SESValue)||fallback;}catch(e){return fallback;}
-}
-
-async function dataSave(key,val){
-  lsSet('ses_'+key,val); // always mirror locally for offline resilience
-  if(!USE_SHAREPOINT) return;
-  var listName=SP_LISTS[key]||('SESEquip_'+key);
-  var ok=await spSetItem(listName,'data',val);
-  if(!ok) showSyncBadge('⚠ Sync failed',true);
-}
-
-// Debounced save — batches rapid saves
-function scheduleSave(key,val){
-  _pendingSave[key]=val;
-  clearTimeout(_saveTimer);
-  _saveTimer=setTimeout(function(){
-    var keys=Object.keys(_pendingSave);
-    showSyncBadge('⟳ Saving…');
-    var promises=keys.map(function(k){return dataSave(k,_pendingSave[k]);});
-    _pendingSave={};
-    Promise.all(promises).then(function(){showSyncBadge('✓ Saved');}).catch(function(){showSyncBadge('⚠ Sync error',true);});
-  },1200);
-}
-
-
-// ─── TEAMS INIT ──────────────────────────────────────────────────────────────
-async function teamsInit(){
-  var overlay=document.getElementById('teamsInitOverlay');
-  var msg=document.getElementById('initMsg');
-
-  function setMsg(m){if(msg)msg.textContent=m;}
-
-  // Try Teams SDK
-  try{
-    await microsoftTeams.app.initialize();
-    TEAMS_CONTEXT=await microsoftTeams.app.getContext();
-    setMsg('TEAMS CONNECTED…');
-  }catch(e){
-    // Running outside Teams (browser/SharePoint) — that's fine
-    setMsg('LOADING…');
-  }
-
-  // Load SharePoint URL from local storage
-  SP_SITE_URL=localStorage.getItem('ses_sp_url')||'';
-
-  if(SP_SITE_URL){
-    USE_SHAREPOINT=true;
-    setMsg('LOADING DATA…');
-    // Test connectivity
-    try{
-      await spRequest('GET',SP_SITE_URL+'/_api/web/title',null);
-      // Ensure all lists exist with SESValue field
-      var listDefs=[
-        {n:SP_LISTS.members},{n:SP_LISTS.vehicles},{n:SP_LISTS.checks},
-        {n:SP_LISTS.notes},{n:SP_LISTS.signoffs},{n:SP_LISTS.vchecks},
-        {n:SP_LISTS.orc},{n:SP_LISTS.orcCustom}
-      ];
-      var fieldDef=[{name:'SESValue',type:3,max:255000}]; // Note type 3=Text, we use long text
-      for(var i=0;i<listDefs.length;i++){
-        setMsg('SETTING UP: '+listDefs[i].n.replace('SESEquip_','')+'…');
-        await spEnsureList(listDefs[i].n,fieldDef);
-      }
-    }catch(e){
-      console.warn('SharePoint connectivity issue:',e);
-      USE_SHAREPOINT=false;
-      showSyncBadge('⚠ SharePoint offline — using local data',true);
-    }
-  }
-
-  // Load all data
-  setMsg('LOADING MEMBERS…');
-  await loadAll();
-
-  // Hide overlay, show login
-  if(overlay) overlay.classList.add('hidden');
-  document.getElementById('loginScreen').classList.remove('hidden');
-}
-
-async function doSetupSave(){
-  var url=(document.getElementById('setupUrl').value||'').trim().replace(/\/+$/,'');
-  var err=document.getElementById('setupErr');
-  err.textContent='';
-  if(!url||!url.startsWith('http')){err.textContent='Please enter a valid URL.';return;}
-  err.textContent='Testing connection…';
-  try{
-    var r=await fetch(url+'/_api/web/title',{headers:{Accept:'application/json;odata=verbose'},credentials:'include'});
-    if(!r.ok) throw new Error('HTTP '+r.status);
-    localStorage.setItem('ses_sp_url',url);
-    document.getElementById('setupScreen').style.display='none';
-    teamsInit();
-  }catch(e){
-    err.textContent='Could not connect. Check the URL and that you are logged in to Microsoft 365.';
-  }
-}
-
-function doSetupSkip(){localStorage.setItem('ses_sp_skip','1');
-  USE_SHAREPOINT=false;
-  document.getElementById('setupScreen').style.display='none';
-  teamsInit();
-}
-
 function enforceInvariants(){
   var owner=MEMBERS.find(function(m){return m.id===LOCKED_OWNER_ID;});
   if(!owner){MEMBERS.push({first:'Lindsay',last:'Bawden',id:'40055691',pin:'0000'});}
@@ -810,11 +574,102 @@ var user=null,checks={},notes={},signoffs={},vchecks={},currentVehicle=null,curr
 var MEMBERS=[],VEHICLES=[];
 
 // ─── LOAD / SAVE ─────────────────────────────────────────────────────────────
+// ─── SHAREPOINT CONFIG ───────────────────────────────────────────────────────
+var SP_SITE_URL='';
+var USE_SHAREPOINT=false;
+var _saveTimer=null;
+var _pendingSave={};
+var _digestCache=null,_digestExpiry=0;
 
-// ─── LOAD / SAVE (SharePoint-aware async versions) ────────────────────────────
+function showSyncBadge(msg,err){
+  var b=document.getElementById('syncBadge');if(!b)return;
+  b.textContent=msg;b.className='sync-badge show'+(err?' err':'');
+  clearTimeout(b._t);b._t=setTimeout(function(){b.classList.remove('show');},2500);
+}
+
+async function getFormDigest(){
+  if(_digestCache&&Date.now()<_digestExpiry)return _digestCache;
+  try{
+    var r=await fetch(SP_SITE_URL+'/_api/contextinfo',{method:'POST',headers:{'Accept':'application/json;odata=verbose'},credentials:'include'});
+    if(!r.ok)return null;
+    var d=await r.json();
+    _digestCache=d.d.GetContextWebInformation.FormDigestValue;
+    _digestExpiry=Date.now()+25*60*1000;
+    return _digestCache;
+  }catch(e){return null;}
+}
+
+async function spRequest(method,url,body){
+  var headers={'Accept':'application/json;odata=verbose','Content-Type':'application/json;odata=verbose'};
+  if(method==='MERGE'||method==='DELETE'){
+    var digest=await getFormDigest();if(digest)headers['X-RequestDigest']=digest;
+    headers['X-HTTP-Method']=method;headers['IF-MATCH']='*';method='POST';
+  }else if(method==='POST'){
+    var digest=await getFormDigest();if(digest)headers['X-RequestDigest']=digest;
+  }
+  var opts={method:method,headers:headers,credentials:'include'};
+  if(body)opts.body=JSON.stringify(body);
+  var r=await fetch(url,opts);
+  if(!r.ok){var t=await r.text().catch(function(){return'';});throw new Error('SP '+r.status+': '+t.substr(0,100));}
+  if(r.status===204)return null;
+  return r.json();
+}
+
+async function spEnsureList(name){
+  try{await spRequest('GET',SP_SITE_URL+"/_api/web/lists/getbytitle('"+name+"')?$select=Id",null);return;}catch(e){}
+  try{
+    await spRequest('POST',SP_SITE_URL+'/_api/web/lists',{__metadata:{type:'SP.List'},Title:name,BaseTemplate:100});
+    await spRequest('POST',SP_SITE_URL+"/_api/web/lists/getbytitle('"+name+"')/fields",{__metadata:{type:'SP.FieldMultiLineText'},Title:'SESValue',FieldTypeKind:3,NumberOfLines:100,UnlimitedLengthInDocumentLibrary:true});
+  }catch(e){console.warn('List create:',e);}
+}
+
+async function spGetItem(list,key){
+  try{
+    var r=await spRequest('GET',SP_SITE_URL+"/_api/web/lists/getbytitle('"+list+"')/items?$filter=Title eq '"+key+"'&$top=1",null);
+    if(r&&r.d&&r.d.results&&r.d.results.length)return r.d.results[0];
+  }catch(e){}
+  return null;
+}
+
+async function spSetItem(list,key,val){
+  try{
+    var existing=await spGetItem(list,key);
+    var body={__metadata:{type:'SP.Data.'+list+'ListItem'},Title:key,SESValue:JSON.stringify(val)};
+    if(existing)await spRequest('MERGE',SP_SITE_URL+"/_api/web/lists/getbytitle('"+list+"')/items("+existing.Id+")",body);
+    else await spRequest('POST',SP_SITE_URL+"/_api/web/lists/getbytitle('"+list+"')/items",body);
+    return true;
+  }catch(e){console.error('spSetItem:',e);return false;}
+}
+
+async function dataLoad(key,fallback){
+  var lsVal;try{lsVal=JSON.parse(localStorage.getItem('ses_'+key));}catch(e){}
+  if(!USE_SHAREPOINT)return lsVal||fallback;
+  var item=await spGetItem('SESEquip_'+key,'data');
+  if(!item){return lsVal||fallback;}
+  try{return JSON.parse(item.SESValue)||fallback;}catch(e){return fallback;}
+}
+
+function dataSave(key,val){
+  try{localStorage.setItem('ses_'+key,JSON.stringify(val));}catch(e){}
+  if(!USE_SHAREPOINT)return;
+  _pendingSave[key]=val;
+  clearTimeout(_saveTimer);
+  _saveTimer=setTimeout(async function(){
+    var keys=Object.keys(_pendingSave);
+    var snap={};keys.forEach(function(k){snap[k]=_pendingSave[k];});
+    _pendingSave={};
+    showSyncBadge('⟳ Saving…');
+    var ok=true;
+    for(var i=0;i<keys.length;i++){
+      var r=await spSetItem('SESEquip_'+keys[i],'data',snap[keys[i]]);
+      if(!r)ok=false;
+    }
+    showSyncBadge(ok?'✓ Saved':'⚠ Sync error',!ok);
+  },1200);
+}
+
 async function loadAll(){
-  var defMembers=DEFAULT_MEMBERS.map(function(m){var c={};for(var k in m){if(m.hasOwnProperty(k))c[k]=m[k];}return c;});
-  MEMBERS=await dataLoad('members',defMembers);
+  MEMBERS=await dataLoad('members',DEFAULT_MEMBERS.map(function(m){var c={};for(var k in m){if(m.hasOwnProperty(k))c[k]=m[k];}return c;}));
   VEHICLES=await dataLoad('vehicles',JSON.parse(JSON.stringify(DEFAULT_VEHICLES)));
   checks=await dataLoad('checks',{});
   notes=await dataLoad('notes',{});
@@ -825,17 +680,15 @@ async function loadAll(){
   repairVehicles();
   enforceInvariants();
 }
-
 function saveAll(){
-  scheduleSave('members',MEMBERS);
-  scheduleSave('vehicles',VEHICLES);
-  scheduleSave('checks',checks);
-  scheduleSave('notes',notes);
-  scheduleSave('signoffs',signoffs);
-  scheduleSave('vchecks',vchecks);
+  dataSave('members',MEMBERS);
+  dataSave('vehicles',VEHICLES);
+  dataSave('checks',checks);
+  dataSave('notes',notes);
+  dataSave('signoffs',signoffs);
+  dataSave('vchecks',vchecks);
   saveORC();
 }
-
 function repairMembers(){
   var byId={};
   MEMBERS.forEach(function(m){if(m&&m.id)byId[m.id]=m;});
@@ -1618,17 +1471,39 @@ var ORC_HARDCODED=[
 ];
 var ORC_DATA={},ORC_CUSTOM=[],ORC_FILTER='all',ORC_YEAR=new Date().getFullYear();
 var MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-
 async function loadORC(){
   ORC_DATA=await dataLoad('orc',{});
-  ORC_CUSTOM=await dataLoad('orcCustom',[]);
+  ORC_CUSTOM=await dataLoad('orc_custom',[]);
 }
-
 function saveORC(){
-  scheduleSave('orc',ORC_DATA);
-  scheduleSave('orcCustom',ORC_CUSTOM);
+  dataSave('orc',ORC_DATA);
+  dataSave('orc_custom',ORC_CUSTOM);
 }
-
+function orcBuildRegister(){
+  var reg=ORC_HARDCODED.map(function(item,idx){return{catId:item.catId,name:item.name,model:item.model||'\u2014',serial:item.serial||'',vehicle:item.vehicle,locker:item.locker,itemKey:'hc:'+idx,isCustom:false};});
+  ORC_CUSTOM.forEach(function(ci,idx){reg.push({catId:ci.catId,name:ci.name,model:ci.model||'\u2014',serial:ci.serial||'',vehicle:ci.vehicle||'General',locker:ci.locker||'Stores',itemKey:'custom:'+idx,isCustom:true,customIdx:idx});});
+  return reg;
+}
+function orcGetCheck(itemKey,year,month){return ORC_DATA[itemKey+':'+year+':'+month]||null;}
+function orcSetCheck(itemKey,year,month,status){
+  var k=itemKey+':'+year+':'+month;
+  if(ORC_DATA[k]&&ORC_DATA[k].status===status)delete ORC_DATA[k];
+  else ORC_DATA[k]={status:status,by:user?user.first+' '+user.last:'Unknown',date:new Date().toISOString()};
+  saveORC();
+  var safeKey=itemKey.replace(/[^a-zA-Z0-9]/g,'_');
+  var el=document.getElementById('orc-cell-'+safeKey+'-'+year+'-'+month);
+  if(el)el.innerHTML=orcCellHtml(itemKey,year,month,orcGetCheck(itemKey,year,month));
+}
+function orcCellHtml(itemKey,year,month,chk){
+  return '<div class="orc-cell-wrap" title="'+(chk?chk.status.toUpperCase()+' \u2014 '+chk.by+' \u2014 '+new Date(chk.date).toLocaleDateString('en-AU'):'')+'">'+ 
+    ['pass','fail','na'].map(function(st){
+      var lbl=st==='pass'?'\u2713':st==='fail'?'\u2717':'N/A';
+      var cls='orc-mini-btn '+(st==='pass'?'orc-pass':st==='fail'?'orc-fail':'orc-na')+(chk&&chk.status===st?' active':'');
+      return '<button class="'+cls+'" onclick="orcSetCheck(\''+itemKey+'\','+year+',\''+month+'\',\''+st+'\')">'+lbl+'</button>';
+    }).join('')+'</div>';
+}
+function orcYearSummary(register,year){
+  var pass=0,fail=0,na=0,pend=0;
   var now=new Date(),curMonth=now.getMonth(),curYear=now.getFullYear();
   register.forEach(function(item){
     MONTHS.forEach(function(month,mi){
@@ -1825,16 +1700,71 @@ function showToast(msg){
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
-
-// ─── BOOT ─────────────────────────────────────────────────────────────────────
-// Check if SP URL needs to be configured on first run
-if(!localStorage.getItem('ses_sp_url')&&!localStorage.getItem('ses_sp_skip')){
-  // Show setup screen briefly after Teams init
-  document.getElementById('teamsInitOverlay').classList.add('hidden');
-  document.getElementById('setupScreen').style.display='flex';
-} else {
-  teamsInit();
+async function doSetupSave(){
+  var url=(document.getElementById('setupUrl').value||'').trim().replace(/\/+$/,'');
+  var err=document.getElementById('setupErr');
+  err.textContent='';
+  if(!url||!url.startsWith('http')){err.textContent='Please enter a valid URL.';return;}
+  err.textContent='Testing connection…';
+  try{
+    var r=await fetch(url+'/_api/web/title',{headers:{Accept:'application/json;odata=verbose'},credentials:'include'});
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    localStorage.setItem('ses_sp_url',url);
+    doSetupSkip();
+  }catch(e){
+    err.textContent='Could not connect. Check the URL and that you are signed in to Microsoft 365.';
+  }
 }
+
+function doSetupSkip(){
+  localStorage.setItem('ses_sp_skip','1');
+  var s=document.getElementById('setupScreen');if(s)s.classList.remove('show');
+  bootApp();
+}
+
+async function bootApp(){
+  SP_SITE_URL=localStorage.getItem('ses_sp_url')||'';
+  if(SP_SITE_URL){
+    USE_SHAREPOINT=true;
+    var tMsg=document.getElementById('tMsg');
+    if(tMsg)tMsg.textContent='CONNECTING TO SHAREPOINT…';
+    try{
+      await spRequest('GET',SP_SITE_URL+'/_api/web/title',null);
+      var lists=['members','vehicles','checks','notes','signoffs','vchecks','orc','orc_custom'];
+      for(var i=0;i<lists.length;i++){
+        if(tMsg)tMsg.textContent='SETTING UP: '+lists[i].toUpperCase()+'…';
+        await spEnsureList('SESEquip_'+lists[i]);
+      }
+    }catch(e){
+      USE_SHAREPOINT=false;
+      showSyncBadge('⚠ SharePoint offline — local only',true);
+    }
+  }
+  var tMsg=document.getElementById('tMsg');if(tMsg)tMsg.textContent='LOADING DATA…';
+  await loadAll();
+  var ov=document.getElementById('teamsOverlay');if(ov)ov.classList.add('hidden');
+  var ls=document.getElementById('loginScreen');if(ls)ls.classList.remove('hidden');
+}
+
+// Expose handlers for inline onclick attributes and Teams webview contexts.
+window.doLogin=doLogin;
+window.doChangePinOnLogin=doChangePinOnLogin;
+window.doLogout=doLogout;
+window.showAdmin=showAdmin;
+window.showInventory=showInventory;
+window.doPrint=doPrint;
+window.goBack=goBack;
+window.doSetupSave=doSetupSave;
+window.doSetupSkip=doSetupSkip;
+
+// Start
+// Default to local-only boot so GitHub Pages / Teams Website Tab opens straight to login.
+// SharePoint List sync remains optional via doSetupSave(), but no setup screen blocks first load.
+(function(){
+  var ls=document.getElementById('loginScreen');
+  if(ls)ls.classList.add('hidden');
+  bootApp();
+})();
 
 </script>
 </body>
