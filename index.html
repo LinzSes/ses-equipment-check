@@ -569,13 +569,7 @@ function roleLabel(m){
   if(r==='admin_membership')return'Admin \u2014 Membership';
   if(r==='admin_inventory')return'Admin \u2014 Inventory';
   return'Member';
-
-// ─── GLOBAL ERROR HANDLER ────────────────────────────────────────────────────
-window.onerror=function(msg,src,line,col,err){
-  var t=document.getElementById('toast');
-  if(t){t.textContent='JS Error: '+(msg||'unknown')+' (L'+line+')';t.classList.add('show');setTimeout(function(){t.classList.remove('show');},6000);}
-  return false;
-};
+}
 
 // ─── SHAREPOINT / TEAMS CONFIG ───────────────────────────────────────────────
 var SP_SITE_URL=''; // set from localStorage or setup screen
